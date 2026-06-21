@@ -100,7 +100,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL is not set in backend/.env")
+    raise RuntimeError("DATABASE_URL is not set")
 
 DATABASES = {
     "default": dj_database_url.config(
@@ -110,8 +110,12 @@ DATABASES = {
     )
 }
 
-DATABASES["default"].setdefault("OPTIONS", {})
-DATABASES["default"]["OPTIONS"]["sslmode"] = "require"
+POSTGRES_SSLMODE = os.getenv("POSTGRES_SSLMODE")
+
+if POSTGRES_SSLMODE:
+    DATABASES["default"].setdefault("OPTIONS", {})
+    DATABASES["default"]["OPTIONS"]["sslmode"] = POSTGRES_SSLMODE
+
 DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
 
 CORS_ALLOWED_ORIGINS = env_list(
