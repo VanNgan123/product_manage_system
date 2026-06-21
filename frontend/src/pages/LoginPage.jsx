@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../api/authApi";
 
+
 function LoginPage() {
     const navigate = useNavigate();
 
@@ -43,35 +44,65 @@ function LoginPage() {
     };
 
     return (
-        <div>
-            <h1>Đăng nhập</h1>
+        <div className="container vh-100 d-flex justify-content-center align-items-center">
+            <div
+                className="card shadow-lg p-4"
+                style={{
+                    width: "420px",
+                    borderRadius: "16px",
+                }}
+            >
+                <h2 className="text-center mb-4">
+                    Product Management
+                </h2>
 
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Username</label>
-                    <input
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                    />
-                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label className="form-label">
+                            Username
+                        </label>
 
-                <div>
-                    <label>Password</label>
-                    <input
-                        name="password"
-                        type="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                    />
-                </div>
+                        <input
+                            className="form-control"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            placeholder="Nhập username"
+                        />
+                    </div>
 
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                    <div className="mb-3">
+                        <label className="form-label">
+                            Password
+                        </label>
 
-                <button type="submit" disabled={loading}>
-                    {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-                </button>
-            </form>
+                        <input
+                            className="form-control"
+                            name="password"
+                            type="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Nhập password"
+                        />
+                    </div>
+
+                    {error && (
+                        <div className="alert alert-danger">
+                            {error}
+                        </div>
+                    )}
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn btn-primary w-100"
+                    >
+                        {loading
+                            ? "Đang đăng nhập..."
+                            : "Đăng nhập"}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }
