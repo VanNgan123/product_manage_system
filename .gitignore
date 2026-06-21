@@ -38,3 +38,10 @@ build/
 # =========================
 .DS_Store
 Thumbs.db
+
+.env
+backend/.env
+venv/
+backend/venv/
+__pycache__/
+*.pyc
