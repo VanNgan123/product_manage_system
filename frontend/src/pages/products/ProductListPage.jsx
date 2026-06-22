@@ -10,6 +10,13 @@ function ProductListPage() {
 
     const [keyword, setKeyword] = useState("");
     const [categoryId, setCategoryId] = useState("");
+    const [allProducts, setAllProducts] = useState([]);
+
+    const [filters, setFilters] = useState({
+        sort: "newest",
+        status: "",
+        stock: "",
+    });
     const [page, setPage] = useState(1);
 
     const [count, setCount] = useState(0);
@@ -33,13 +40,11 @@ function ProductListPage() {
             setError("");
 
             const response = await productApi.getAll({
-                name: keyword || undefined,
-                category: categoryId || undefined,
-                page,
-                page_size: 20,
+                page_size: 9999,
             });
 
             setProducts(response.data.data);
+            setAllProducts(response.data.data);
             setCount(response.data.count);
             setNext(response.data.next);
             setPrevious(response.data.previous);
@@ -76,92 +81,434 @@ function ProductListPage() {
         }
     };
 
-    return (
-        <div>
-            <h1>Quản lý sản phẩm</h1>
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat("vi-VN", {
+            style: "currency",
+            currency: "VND",
+        }).format(price);
+    };
 
-            <div>
+    const filteredProducts = [...allProducts]
+        .filter((product) => {
+
+            const matchKeyword =
+                !keyword ||
+                product.name
+                    .toLowerCase()
+                    .includes(keyword.toLowerCase());
+
+            const matchCategory =
+                !categoryId ||
+                String(product.category) === categoryId;
+
+            const matchStatus =
+                !filters.status ||
+                String(product.is_active) === filters.status;
+
+            const matchStock =
+                !filters.stock ||
+                product.stock_status === filters.stock;
+
+            return (
+                matchKeyword &&
+                matchCategory &&
+                matchStatus &&
+                matchStock
+            );
+        })
+        .sort((a, b) => {
+
+            switch (filters.sort) {
+
+                case "newest":
+                    return b.id - a.id;
+
+                case "oldest":
+                    return a.id - b.id;
+
+                case "priceAsc":
+                    return a.price - b.price;
+
+                case "priceDesc":
+                    return b.price - a.price;
+
+                default:
+                    return 0;
+            }
+        });
+    return (
+        <div className="page-container">
+            <div className="page-header">
+                <div>
+                    <h1>Quản lý sản phẩm</h1>
+                    <p>Quản lý sản phẩm và tồn kho</p>
+                </div>
+
+                <Link
+                    to="/products/create"
+                    className="btn-primary"
+                >
+                    + Thêm sản phẩm
+                </Link>
+            </div>
+
+            <div className="search-card">
                 <input
-                    placeholder="Tìm sản phẩm..."
+                    className="search-input"
+                    placeholder="Tìm kiếm sản phẩm..."
                     value={keyword}
-                    onChange={(event) => setKeyword(event.target.value)}
+                    onChange={(event) =>
+                        setKeyword(event.target.value)
+                    }
                 />
 
                 <select
+                    className="search-select"
                     value={categoryId}
-                    onChange={(event) => setCategoryId(event.target.value)}
+                    onChange={(event) =>
+                        setCategoryId(event.target.value)
+                    }
                 >
-                    <option value="">Tất cả danh mục</option>
+                    <option value="">
+                        Tất cả danh mục
+                    </option>
+
                     {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
+                        <option
+                            key={category.id}
+                            value={category.id}
+                        >
                             {category.name}
                         </option>
                     ))}
                 </select>
 
-                <button onClick={handleSearch}>Tìm kiếm</button>
-
-                <Link to="/products/create">Thêm sản phẩm</Link>
-            </div>
-
-            {loading && <p>Đang tải dữ liệu...</p>}
-            {error && <p style={{ color: "red" }}>{error}</p>}
-
-            <p>Tổng số: {count}</p>
-
-            <table border="1" cellPadding="8" width="100%">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tên sản phẩm</th>
-                        <th>SKU</th>
-                        <th>Danh mục</th>
-                        <th>Giá</th>
-                        <th>Số lượng</th>
-                        <th>Tồn kho</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {products.map((product) => (
-                        <tr key={product.id}>
-                            <td>{product.id}</td>
-                            <td>{product.name}</td>
-                            <td>{product.sku}</td>
-                            <td>{product.category_detail?.name}</td>
-                            <td>{product.price}</td>
-                            <td>{product.quantity}</td>
-                            <td>{product.stock_status}</td>
-                            <td>{product.is_active ? "Hoạt động" : "Ẩn"}</td>
-                            <td>
-                                <Link to={`/products/${product.id}/edit`}>Sửa</Link>
-                                {" | "}
-                                <button onClick={() => handleDelete(product.id)}>Xóa</button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            <div style={{ marginTop: "16px" }}>
                 <button
-                    disabled={!previous}
-                    onClick={() => setPage((currentPage) => currentPage - 1)}
+                    className="btn-search"
+                    onClick={handleSearch}
                 >
-                    Trang trước
-                </button>
-
-                <span style={{ margin: "0 12px" }}>Trang {page}</span>
-
-                <button
-                    disabled={!next}
-                    onClick={() => setPage((currentPage) => currentPage + 1)}
-                >
-                    Trang sau
+                    Tìm kiếm
                 </button>
             </div>
+
+            {loading && (
+                <div className="loading-card">
+                    Đang tải dữ liệu...
+                </div>
+            )}
+
+            {error && (
+                <div className="error-alert">
+                    {error}
+                </div>
+            )}
+
+            {!loading && (
+                <>
+                    {/* <div className="summary-card">
+                        Tổng số sản phẩm:
+                        <strong> {count}</strong>
+                    </div> */}
+                    <div className="summary-card">
+
+                        <div className="summary-left">
+                            Tổng số sản phẩm:
+                            <strong>{count}</strong>
+                        </div>
+
+                        <div className="filter-group">
+
+                            <button
+                                className={
+                                    filters.sort === "newest"
+                                        ? "filter-btn active"
+                                        : "filter-btn"
+                                }
+                                onClick={() =>
+                                    setFilters({
+                                        ...filters,
+                                        sort: "newest",
+                                    })
+                                }
+                            >
+                                Mới nhất
+                            </button>
+
+                            <button
+                                className={
+                                    filters.sort === "oldest"
+                                        ? "filter-btn active"
+                                        : "filter-btn"
+                                }
+                                onClick={() =>
+                                    setFilters({
+                                        ...filters,
+                                        sort: "oldest",
+                                    })
+                                }
+                            >
+                                Cũ nhất
+                            </button>
+
+                            <button
+                                className={
+                                    filters.sort === "priceAsc"
+                                        ? "filter-btn active"
+                                        : "filter-btn"
+                                }
+                                onClick={() =>
+                                    setFilters({
+                                        ...filters,
+                                        sort: "priceAsc",
+                                    })
+                                }
+                            >
+                                Giá ↑
+                            </button>
+
+                            <button
+                                className={
+                                    filters.sort === "priceDesc"
+                                        ? "filter-btn active"
+                                        : "filter-btn"
+                                }
+                                onClick={() =>
+                                    setFilters({
+                                        ...filters,
+                                        sort: "priceDesc",
+                                    })
+                                }
+                            >
+                                Giá ↓
+                            </button>
+
+                            <select
+                                className="filter-select"
+                                value={filters.status}
+                                onChange={(e) =>
+                                    setFilters({
+                                        ...filters,
+                                        status: e.target.value,
+                                    })
+                                }
+                            >
+                                <option value="">
+                                    Tất cả trạng thái
+                                </option>
+
+                                <option value="true">
+                                    Hoạt động
+                                </option>
+
+                                <option value="false">
+                                    Ẩn
+                                </option>
+                            </select>
+
+                            <select
+                                className="filter-select"
+                                value={filters.stock}
+                                onChange={(e) =>
+                                    setFilters({
+                                        ...filters,
+                                        stock: e.target.value,
+                                    })
+                                }
+                            >
+                                <option value="">
+                                    Tất cả kho
+                                </option>
+
+                                <option value="In stock">
+                                    Còn hàng
+                                </option>
+
+                                <option value="Low stock">
+                                    Sắp hết
+                                </option>
+
+                                <option value="Out of stock">
+                                    Hết hàng
+                                </option>
+                            </select>
+                            <button
+                                className="reset-filter-btn"
+                                onClick={() => {
+                                    setKeyword("");
+                                    setCategoryId("");
+
+                                    setFilters({
+                                        sort: "newest",
+                                        status: "",
+                                        stock: "",
+                                    });
+                                }}
+                            >
+                                Xóa lọc
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <div className="table-card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ảnh</th>
+                                    <th>Sản phẩm</th>
+                                    <th>SKU</th>
+                                    <th>Danh mục</th>
+                                    <th>Giá</th>
+                                    <th>SL</th>
+                                    <th>Tồn kho</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {filteredProducts.length > 0 ? (
+                                    filteredProducts.map((product) => (
+                                        <tr key={product.id}>
+                                            <td>
+                                                <img
+                                                    className="product-image"
+                                                    src={
+                                                        product.image_url &&
+                                                            product.image_url.trim() !== ""
+                                                            ? product.image_url
+                                                            : "https://placehold.co/60x60/png?text=IMG"
+                                                    }
+                                                    alt={product.name}
+                                                />
+                                            </td>
+
+                                            <td>
+                                                <div className="product-name">
+                                                    <strong>
+                                                        {product.name}
+                                                    </strong>
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <span className="sku-badge">
+                                                    {product.sku}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                {product.category_detail?.name}
+                                            </td>
+
+                                            <td className="price-cell">
+                                                {formatPrice(
+                                                    product.price
+                                                )}
+                                            </td>
+
+                                            <td>
+                                                {product.quantity}
+                                            </td>
+
+                                            <td>
+                                                <span
+                                                    className={
+                                                        product.stock_status === "In stock"
+                                                            ? "stock in-stock"
+                                                            : product.stock_status === "Low stock"
+                                                                ? "stock low-stock"
+                                                                : "stock out-stock"
+                                                    }
+                                                >
+                                                    {product.stock_status}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span
+                                                    className={
+                                                        product.is_active
+                                                            ? "status active"
+                                                            : "status inactive"
+                                                    }
+                                                >
+                                                    {product.is_active
+                                                        ? "Hoạt động"
+                                                        : "Ẩn"}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <div className="action-buttons">
+                                                    <Link
+                                                        className="btn-edit"
+                                                        to={`/products/${product.id}/edit`}
+                                                    >
+                                                        Sửa
+                                                    </Link>
+
+                                                    <button
+                                                        className="btn-delete"
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                product.id
+                                                            )
+                                                        }
+                                                    >
+                                                        Xóa
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td
+                                            colSpan="9"
+                                            className="empty-row"
+                                        >
+                                            Không có dữ liệu sản phẩm
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="pagination">
+                        <button
+                            className="page-btn"
+                            disabled={!previous}
+                            onClick={() =>
+                                setPage(
+                                    (currentPage) =>
+                                        currentPage - 1
+                                )
+                            }
+                        >
+                            ← Trang trước
+                        </button>
+
+                        <span className="page-number">
+                            Trang {page}
+                        </span>
+
+                        <button
+                            className="page-btn"
+                            disabled={!next}
+                            onClick={() =>
+                                setPage(
+                                    (currentPage) =>
+                                        currentPage + 1
+                                )
+                            }
+                        >
+                            Trang sau →
+                        </button>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

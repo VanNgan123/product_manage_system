@@ -68,47 +68,139 @@ function CategoryFormPage() {
         }
     };
 
+    // return (
+    //     <div>
+    //         <h1>{isEditMode ? "Cập nhật danh mục" : "Thêm danh mục"}</h1>
+
+    //         {error && <p style={{ color: "red" }}>{error}</p>}
+
+    //         <form onSubmit={handleSubmit}>
+    //             <div>
+    //                 <label>Tên danh mục</label>
+    //                 <input
+    //                     name="name"
+    //                     value={formData.name}
+    //                     onChange={handleChange}
+    //                 />
+    //             </div>
+
+    //             <div>
+    //                 <label>Mô tả</label>
+    //                 <textarea
+    //                     name="description"
+    //                     value={formData.description}
+    //                     onChange={handleChange}
+    //                 />
+    //             </div>
+
+    //             <div>
+    //                 <label>
+    //                     <input
+    //                         type="checkbox"
+    //                         name="is_active"
+    //                         checked={formData.is_active}
+    //                         onChange={handleChange}
+    //                     />
+    //                     Hoạt động
+    //                 </label>
+    //             </div>
+
+    //             <button type="submit" disabled={loading}>
+    //                 {loading ? "Đang lưu..." : "Lưu"}
+    //             </button>
+    //         </form>
+    //     </div>
+    // );
+
     return (
-        <div>
-            <h1>{isEditMode ? "Cập nhật danh mục" : "Thêm danh mục"}</h1>
+        <div className="form-page">
+            <div className="form-card">
+                <div className="form-header">
+                    <h1>
+                        {isEditMode
+                            ? "Cập nhật danh mục"
+                            : "Thêm danh mục"}
+                    </h1>
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
-
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Tên danh mục</label>
-                    <input
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                    />
+                    <p>
+                        Quản lý thông tin danh mục sản phẩm
+                    </p>
                 </div>
 
-                <div>
-                    <label>Mô tả</label>
-                    <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                    />
-                </div>
+                {error && (
+                    <div className="error-alert">
+                        {error}
+                    </div>
+                )}
 
-                <div>
-                    <label>
+                <form
+                    className="category-form"
+                    onSubmit={handleSubmit}
+                >
+                    <div className="form-group">
+                        <label>Tên danh mục</label>
+
+                        <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Nhập tên danh mục..."
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Mô tả</label>
+
+                        <textarea
+                            name="description"
+                            rows="5"
+                            value={formData.description}
+                            onChange={handleChange}
+                            placeholder="Nhập mô tả..."
+                        />
+                    </div>
+
+                    <div className="checkbox-group">
                         <input
                             type="checkbox"
+                            id="is_active"
                             name="is_active"
                             checked={formData.is_active}
                             onChange={handleChange}
                         />
-                        Hoạt động
-                    </label>
-                </div>
 
-                <button type="submit" disabled={loading}>
-                    {loading ? "Đang lưu..." : "Lưu"}
-                </button>
-            </form>
+                        <label htmlFor="is_active">
+                            Danh mục đang hoạt động
+                        </label>
+                    </div>
+
+                    <div className="form-actions">
+                        <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() =>
+                                navigate("/categories")
+                            }
+                        >
+                            Hủy
+                        </button>
+
+                        <button
+                            type="submit"
+                            className="btn-primary"
+                            disabled={loading}
+                        >
+                            {loading
+                                ? "Đang lưu..."
+                                : isEditMode
+                                    ? "Cập nhật"
+                                    : "Tạo mới"}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
