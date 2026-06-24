@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import "./index.css";
 import LoginPage from "./pages/LoginPage";
 
 import ProductFormPage from "./pages/products/ProductFormPage";
