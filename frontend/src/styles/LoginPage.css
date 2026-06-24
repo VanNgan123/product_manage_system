@@ -202,7 +202,7 @@
     transition: color 0.8s ease;
 }
 
-.login-card h1 {
+.login-card h3 {
     text-align: center;
     color: var(--text-primary);
     margin-bottom: 8px;
@@ -313,4 +313,24 @@
     font-size: 14px;
     text-align: center;
     font-weight: 500;
+}
+.register-link {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.register-link span {
+    color: #bdbdbd;
+    margin-right: 6px;
+}
+
+.register-link a {
+    color: #4f8cff;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
 }

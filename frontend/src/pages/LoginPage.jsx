@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../api/authApi";
 import "../styles/LoginPage.css";
 
@@ -86,9 +86,9 @@ function LoginPage() {
                     PMS
                 </div>
 
-                <h1>
+                <h3>
                     Product Management System
-                </h1>
+                </h3>
 
                 <p className="subtitle">
                     {role === "admin"
@@ -164,6 +164,13 @@ function LoginPage() {
                                 : "Đăng nhập User"}
                     </button>
                 </form>
+                <div className="register-link">
+                    <span>Chưa có tài khoản?</span>
+
+                    <Link to="/register">
+                        Đăng ký ngay
+                    </Link>
+                </div>
             </div>
         </div>
     );
