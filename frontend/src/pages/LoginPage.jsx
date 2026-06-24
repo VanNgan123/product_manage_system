@@ -1,30 +1,43 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authApi } from "../api/authApi";
-
+import "../styles/LoginPage.css";
 
 function LoginPage() {
     const navigate = useNavigate();
+
+    const [role, setRole] = useState("user");
+    const [switching, setSwitching] = useState(false);
 
     const [formData, setFormData] = useState({
         username: "",
         password: "",
     });
 
-    const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleChange = (event) => {
-        const { name, value } = event.target;
+    const changeRole = (newRole) => {
+        if (newRole === role) return;
 
+        setSwitching(true);
+
+        setTimeout(() => {
+            setRole(newRole);
+            setSwitching(false);
+        }, 700);
+    };
+
+    const handleChange = (e) => {
         setFormData({
             ...formData,
-            [name]: value,
+            [e.target.name]: e.target.value,
         });
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
         try {
             setLoading(true);
@@ -35,112 +48,103 @@ function LoginPage() {
             localStorage.setItem("accessToken", response.data.access);
             localStorage.setItem("refreshToken", response.data.refresh);
 
-            navigate("/products");
-        } catch (error) {
-            setError("Đăng nhập thất bại. Vui lòng kiểm tra tài khoản hoặc mật khẩu.");
+            const meResponse = await authApi.me();
+
+            // Lấy dữ liệu user
+            const userData = meResponse.data.data ? meResponse.data.data : meResponse.data;
+
+            localStorage.setItem("user", JSON.stringify(userData));
+
+            // ==========================================
+            // BƯỚC QUAN TRỌNG NHẤT: IN RA ĐỂ KIỂM TRA
+            console.log("DỮ LIỆU TÀI KHOẢN TỪ BACKEND TRẢ VỀ LÀ:", userData);
+            // ==========================================
+
+            // KIỂM TRA QUYỀN: Tạm thời thêm is_staff và is_superuser vào để quét mọi trường hợp
+            if (userData.role === "admin" || userData.is_staff === true || userData.is_superuser === true) {
+                navigate("/admin");
+            } else {
+                navigate("/products");
+            }
+
+        } catch (err) {
+            console.error(err);
+            setError("Đăng nhập thất bại. Kiểm tra lại tài khoản hoặc mật khẩu.");
         } finally {
             setLoading(false);
         }
     };
-
-    // return (
-    //     <div className="container vh-100 d-flex justify-content-center align-items-center">
-    //         <div
-    //             className="card shadow-lg p-4"
-    //             style={{
-    //                 width: "420px",
-    //                 borderRadius: "16px",
-    //             }}
-    //         >
-    //             <h2 className="text-center mb-4">
-    //                 Product Management
-    //             </h2>
-
-    //             <form onSubmit={handleSubmit}>
-    //                 <div className="mb-3">
-    //                     <label className="form-label">
-    //                         Username
-    //                     </label>
-
-    //                     <input
-    //                         className="form-control"
-    //                         name="username"
-    //                         value={formData.username}
-    //                         onChange={handleChange}
-    //                         placeholder="Nhập username"
-    //                     />
-    //                 </div>
-
-    //                 <div className="mb-3">
-    //                     <label className="form-label">
-    //                         Password
-    //                     </label>
-
-    //                     <input
-    //                         className="form-control"
-    //                         name="password"
-    //                         type="password"
-    //                         value={formData.password}
-    //                         onChange={handleChange}
-    //                         placeholder="Nhập password"
-    //                     />
-    //                 </div>
-
-    //                 {error && (
-    //                     <div className="alert alert-danger">
-    //                         {error}
-    //                     </div>
-    //                 )}
-
-    //                 <button
-    //                     type="submit"
-    //                     disabled={loading}
-    //                     className="btn btn-primary w-100"
-    //                 >
-    //                     {loading
-    //                         ? "Đang đăng nhập..."
-    //                         : "Đăng nhập"}
-    //                 </button>
-    //             </form>
-    //         </div>
-    //     </div>
-    // );
-
     return (
-        <div className="login-page">
+        <div className={`login-page ${role} ${switching ? "switching" : ""}`}>
+            <div className="background-orb orb-1"></div>
+            <div className="background-orb orb-2"></div>
+            <div className="background-orb orb-3"></div>
+
             <div className="login-card">
-                <div className="login-header">
-                    <h1>PMS</h1>
-                    <p>Product Management System</p>
+
+                <div className="logo">
+                    PMS
+                </div>
+
+                <h1>
+                    Product Management System
+                </h1>
+
+                <p className="subtitle">
+                    {role === "admin"
+                        ? "Administrator Access"
+                        : "Customer Portal"}
+                </p>
+
+                <div className="role-switch">
+                    <button
+                        type="button"
+                        className={
+                            role === "user"
+                                ? "active"
+                                : ""
+                        }
+                        onClick={() =>
+                            changeRole("user")
+                        }
+                    >
+                        User
+                    </button>
+
+                    <button
+                        type="button"
+                        className={
+                            role === "admin"
+                                ? "active"
+                                : ""
+                        }
+                        onClick={() =>
+                            changeRole("admin")
+                        }
+                    >
+                        Admin
+                    </button>
                 </div>
 
                 <form
                     className="login-form"
                     onSubmit={handleSubmit}
                 >
-                    <div className="form-group">
-                        <label>Username</label>
+                    <input
+                        type="text"
+                        name="username"
+                        placeholder="Username"
+                        value={formData.username}
+                        onChange={handleChange}
+                    />
 
-                        <input
-                            type="text"
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            placeholder="Nhập username"
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Password</label>
-
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="Nhập password"
-                        />
-                    </div>
+                    <input
+                        type="password"
+                        name="password"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange}
+                    />
 
                     {error && (
                         <div className="login-error">
@@ -155,7 +159,9 @@ function LoginPage() {
                     >
                         {loading
                             ? "Đang đăng nhập..."
-                            : "Đăng nhập"}
+                            : role === "admin"
+                                ? "Đăng nhập Admin"
+                                : "Đăng nhập User"}
                     </button>
                 </form>
             </div>

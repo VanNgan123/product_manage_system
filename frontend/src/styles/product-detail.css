@@ -1,0 +1,291 @@
+
+.detail-page-wrapper {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 24px;
+}
+
+/* ===========================
+   BACK BUTTON
+=========================== */
+
+.btn-back {
+    border: none;
+    background: transparent;
+    color: #3b82f6;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 24px;
+    transition: .3s;
+}
+
+.btn-back:hover {
+    transform: translateX(-5px);
+    color: #2563eb;
+}
+
+/* ===========================
+   PRODUCT CARD
+=========================== */
+
+.detail-card {
+
+    display: flex;
+    gap: 50px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.98),
+            rgba(248,250,252,.95)
+        );
+
+    border-radius: 24px;
+
+    padding: 35px;
+
+    box-shadow:
+        0 25px 60px rgba(15,23,42,.08);
+
+    border: 1px solid #e2e8f0;
+
+    overflow: hidden;
+}
+
+/* ===========================
+   IMAGE
+=========================== */
+
+.detail-image-side {
+    flex: 1;
+}
+
+.detail-image-side img {
+
+    width: 100%;
+    height: 350px;
+
+    object-fit: cover;
+
+    border-radius: 20px;
+
+    transition: .5s;
+}
+
+.detail-image-side img:hover {
+
+    transform:
+        scale(1.03);
+}
+
+/* ===========================
+   INFO
+=========================== */
+
+.detail-info-side {
+
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-info-side h1 {
+
+    font-size: 36px;
+
+    color: #0f172a;
+
+    margin-bottom: 10px;
+
+    font-weight: 700;
+}
+
+/* ===========================
+   PRICE
+=========================== */
+
+.price-tag {
+
+    font-size: 40px;
+
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #60a5fa
+        );
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    margin: 20px 0;
+}
+
+/* ===========================
+   META
+=========================== */
+
+.product-meta {
+
+    background: #f8fafc;
+
+    padding: 18px;
+
+    border-radius: 14px;
+
+    margin-bottom: 20px;
+}
+
+.product-meta p {
+
+    margin-bottom: 12px;
+
+    color: #64748b;
+
+    font-size: 15px;
+}
+
+.product-meta span {
+
+    color: #0f172a;
+
+    font-weight: 700;
+}
+
+/* ===========================
+   DESCRIPTION
+=========================== */
+
+.description {
+
+    margin: 25px 0;
+
+    line-height: 1.8;
+
+    color: #475569;
+
+    font-size: 15px;
+}
+
+/* ===========================
+   ACTION AREA
+=========================== */
+
+.action-area {
+
+    margin-top: auto;
+
+    display: flex;
+
+    gap: 20px;
+
+    align-items: center;
+}
+
+/* ===========================
+   QUANTITY
+=========================== */
+
+.qty-input {
+
+    display: flex;
+    flex-direction: column;
+}
+
+.qty-input label {
+
+    margin-bottom: 8px;
+
+    font-size: 14px;
+
+    color: #64748b;
+}
+
+.qty-input input {
+
+    width: 100px;
+
+    padding: 12px;
+
+    border-radius: 12px;
+
+    border: 2px solid #dbeafe;
+
+    outline: none;
+
+    font-size: 16px;
+
+    text-align: center;
+
+    transition: .3s;
+}
+
+.qty-input input:focus {
+
+    border-color: #3b82f6;
+}
+
+/* ===========================
+   ADD TO CART
+=========================== */
+
+.btn-add-cart {
+
+    flex: 1;
+
+    height: 52px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    font-size: 16px;
+
+    font-weight: 700;
+
+    color: white;
+
+    cursor: pointer;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #1d4ed8
+        );
+
+    transition: .3s;
+}
+
+.btn-add-cart:hover {
+
+    transform:
+        translateY(-3px);
+
+    box-shadow:
+        0 15px 35px
+        rgba(37,99,235,.35);
+}
+
+/* ===========================
+   MOBILE
+=========================== */
+
+@media (max-width: 900px) {
+
+    .detail-card {
+        flex-direction: column;
+    }
+
+    .detail-image-side img {
+        height: 350px;
+    }
+
+    .price-tag {
+        font-size: 32px;
+    }
+}

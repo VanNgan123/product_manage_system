@@ -1,0 +1,326 @@
+/* ===========================
+   BASE & THEME (Giống Login)
+=========================== */
+.user-page-container {
+    min-height: 100vh;
+    background: radial-gradient(circle at top right, #3b82f6, #0f172a);
+    color: #ffffff;
+    font-family: sans-serif;
+    position: relative;
+    overflow-x: hidden;
+    padding-bottom: 50px;
+}
+
+/* ===========================
+   FLOATING ORBS
+=========================== */
+.background-orb {
+    position: fixed; /* Fixed để khi cuộn trang, orb không bị trôi đi mất */
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+.orb-1 {
+    width: 350px; height: 350px;
+    top: -50px; left: -100px;
+    background: rgba(59, 130, 246, 0.4);
+    animation: float1 12s ease-in-out infinite;
+}
+
+.orb-2 {
+    width: 450px; height: 450px;
+    bottom: -100px; right: -150px;
+    background: rgba(255, 255, 255, 0.15);
+    animation: float2 15s ease-in-out infinite;
+}
+
+.orb-3 {
+    width: 300px; height: 300px;
+    top: 40%; left: 20%;
+    background: rgba(168, 85, 247, 0.25);
+    animation: float3 14s ease-in-out infinite;
+}
+
+/* ===========================
+   GLASSMORPHISM SHARED CLASS
+=========================== */
+.glassy-card {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* ===========================
+   HEADER
+=========================== */
+.user-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-logo h2 {
+    margin: 0;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #fff;
+}
+
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-icon {
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 14px;
+}
+
+.btn-cart-header {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-cart-header:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-logout {
+    background: rgba(239, 68, 68, 0.15); /* Đỏ nhạt */
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-logout:hover {
+    background: #ef4444;
+    color: #fff;
+}
+
+/* ===========================
+   MAIN CONTENT LAYOUT
+=========================== */
+.user-main-content {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.page-title {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-title h1 {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.page-title p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 16px;
+}
+
+/* ===========================
+   SEARCH & FILTER
+=========================== */
+.search-card {
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.glassy-input {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 15px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.glassy-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.glassy-input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #3b82f6;
+}
+
+.btn-primary {
+    padding: 12px 25px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+}
+
+/* ===========================
+   PRODUCT GRID & CARDS
+=========================== */
+.summary-text {
+    margin-bottom: 20px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 15px;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.img-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.product-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-card-image {
+    transform: scale(1.08);
+}
+
+.product-card-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.product-category {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #93c5fd;
+    margin-bottom: 8px;
+}
+
+.product-card-body h3 {
+    font-size: 18px;
+    margin: 0 0 15px 0;
+    line-height: 1.4;
+    flex: 1; /* Đẩy giá và nút xuống đáy */
+}
+
+.product-price {
+    font-size: 20px;
+    font-weight: bold;
+    color: #60a5fa; /* Màu xanh sáng */
+    margin-bottom: 20px;
+}
+
+.product-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-secondary {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+    transition: 0.3s;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.product-actions .btn-primary {
+    flex: 1;
+    padding: 10px;
+    font-size: 14px;
+}
+
+/* ===========================
+   PAGINATION & STATES
+=========================== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 15px;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.page-number {
+    font-weight: bold;
+}
+
+.loading-state, .empty-state, .error-alert {
+    padding: 40px;
+    text-align: center;
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.8);
+}
+.error-alert { color: #fca5a5; }

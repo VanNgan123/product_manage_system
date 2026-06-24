@@ -1,0 +1,316 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===========================
+   CSS VARIABLES CHO THEME
+=========================== */
+.login-page {
+    /* Màu biến dùng chung */
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --card-bg: rgba(255, 255, 255, 0.08);
+    --card-border: rgba(255, 255, 255, 0.15);
+    --input-bg: rgba(255, 255, 255, 0.15);
+    --input-text: #ffffff;
+    --btn-bg: linear-gradient(135deg, #2563eb, #1d4ed8);
+    --btn-text: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    
+    /* Màu các khối cầu mờ cho User */
+    --orb-1: rgba(59, 130, 246, 0.4);
+    --orb-2: rgba(255, 255, 255, 0.2);
+    --orb-3: rgba(168, 85, 247, 0.25);
+
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+    background-color: #0f172a; /* Màu nền dự phòng */
+}
+
+/* ===========================
+   BACKGROUND CROSS-FADE (Chuyển nền từ từ)
+=========================== */
+/* Lớp nền User (Mặc định hiển thị) */
+.login-page::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, #3b82f6, #0f172a);
+    opacity: 1;
+    transition: opacity 1.2s ease-in-out; /* Thời gian chuyển đổi cực mượt 1.2s */
+    z-index: 0;
+}
+
+/* Lớp nền Admin (Mặc định ẩn) */
+.login-page::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, #ffffff, #e2e8f0);
+    opacity: 0;
+    transition: opacity 1.2s ease-in-out;
+    z-index: 0;
+}
+
+/* Khi có class admin, đổi độ mờ của 2 lớp nền */
+.login-page.admin::before {
+    opacity: 0;
+}
+.login-page.admin::after {
+    opacity: 1;
+}
+
+/* ===========================
+   ADMIN MODE VARIABLES
+=========================== */
+.login-page.admin {
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --card-bg: rgba(255, 255, 255, 0.6);
+    --card-border: rgba(255, 255, 255, 1);
+    --input-bg: rgba(0, 0, 0, 0.05);
+    --input-text: #0f172a;
+    --btn-bg: linear-gradient(135deg, #0f172a, #334155);
+    --btn-text: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+
+    /* Đổi màu khối cầu cho hợp nền trắng */
+    --orb-1: rgba(148, 163, 184, 0.3);
+    --orb-2: rgba(59, 130, 246, 0.15); 
+    --orb-3: rgba(0, 0, 0, 0.05);
+}
+
+/* ===========================
+   HIỆU ỨNG TRƯỢT LÊN (SLIDE UP FADE)
+=========================== */
+.login-page.switching .login-card {
+    animation: slideUpFade 0.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes slideUpFade {
+    0% { 
+        transform: translateY(0); 
+        opacity: 1; 
+    }
+    40% { 
+        transform: translateY(-40px); /* Trượt lên trên 40px */
+        opacity: 0; /* Mờ dần đi */
+        filter: blur(4px);
+    }
+    41% { 
+        transform: translateY(40px); /* Tức thì nhảy xuống dưới (Người dùng không thấy vì opacity = 0) */
+    }
+    100% { 
+        transform: translateY(0); /* Trượt lên lại vị trí giữa màn hình */
+        opacity: 1; /* Hiện rõ lại */
+        filter: blur(0);
+    }
+}
+
+/* ===========================
+   FLOATING ORBS
+=========================== */
+.background-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    transition: background 1.2s ease-in-out; /* Khối cầu cũng đổi màu từ từ */
+    z-index: 1; /* Đảm bảo nằm trên 2 lớp nền */
+}
+
+.orb-1 {
+    width: 300px; height: 300px;
+    top: -100px; left: -100px;
+    background: var(--orb-1);
+    animation: float1 10s ease-in-out infinite;
+}
+
+.orb-2 {
+    width: 400px; height: 400px;
+    bottom: -150px; right: -150px;
+    background: var(--orb-2);
+    animation: float2 14s ease-in-out infinite;
+}
+
+.orb-3 {
+    width: 250px; height: 250px;
+    top: 60%; left: 15%;
+    background: var(--orb-3);
+    animation: float3 12s ease-in-out infinite;
+}
+
+@keyframes float1 {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(50px); }
+}
+@keyframes float2 {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-70px); }
+}
+@keyframes float3 {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(60px); }
+}
+
+/* ===========================
+   LOGIN CARD & GLASSMORPHISM
+=========================== */
+.login-card {
+    width: 500px;
+    padding: 40px;
+    border-radius: 30px;
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: 0 20px 80px var(--shadow-color);
+    
+    position: relative;
+    z-index: 10;
+    transition: all 0.8s ease;
+    animation: cardAppear 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cardAppear {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===========================
+   TYPOGRAPHY (CHỮ)
+=========================== */
+.logo {
+    font-size: 64px;
+    font-weight: 900;
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 3px;
+    color: var(--text-primary);
+    transition: color 0.8s ease;
+}
+
+.login-card h1 {
+    text-align: center;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    transition: color 0.8s ease;
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    margin-bottom: 25px;
+    transition: color 0.8s ease;
+}
+
+/* ===========================
+   ROLE SWITCH TABS
+=========================== */
+.role-switch {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 5px;
+    border-radius: 16px;
+}
+
+.role-switch button {
+    flex: 1;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.role-switch button.active {
+    background: var(--text-primary);
+    color: var(--bg-gradient); 
+    box-shadow: 0 4px 15px var(--shadow-color);
+}
+
+/* Đảm bảo chữ trên nút luôn nét */
+.login-page.user .role-switch button.active { color: #0f172a; }
+.login-page.admin .role-switch button.active { background: #0f172a; color: #ffffff; }
+
+/* ===========================
+   FORM & INPUTS
+=========================== */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 15px;
+    border-radius: 14px;
+    border: 2px solid transparent;
+    outline: none;
+    background: var(--input-bg);
+    color: var(--input-text);
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.login-form input::placeholder {
+    color: var(--text-secondary);
+}
+
+.login-form input:focus {
+    border-color: var(--text-secondary);
+    background: transparent;
+}
+
+/* ===========================
+   LOGIN BUTTON
+=========================== */
+.login-btn {
+    padding: 15px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--btn-text);
+    background: var(--btn-bg);
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px var(--shadow-color);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+/* ===========================
+   ERROR MESSAGE
+=========================== */
+.login-error {
+    color: #ef4444;
+    font-size: 14px;
+    text-align: center;
+    font-weight: 500;
+}

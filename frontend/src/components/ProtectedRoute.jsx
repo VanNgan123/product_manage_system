@@ -1,13 +1,15 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute() {
     const token = localStorage.getItem("accessToken");
 
+    // Nếu không có token -> Đuổi về trang login
     if (!token) {
         return <Navigate to="/login" replace />;
     }
 
-    return children;
+    // Nếu có token -> Cho phép đi tiếp vào các trang bên trong
+    return <Outlet />;
 }
 
 export default ProtectedRoute;

@@ -1,0 +1,71 @@
+.status {
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.status.active {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status.inactive {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+.table-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow:
+        0 4px 20px rgba(0,0,0,.05);
+}
+
+.table-card table tbody tr {
+    transition: all .25s ease;
+}
+
+.table-card table tbody tr:hover {
+    background: #f8fafc;
+    transform: scale(1.002);
+}
+
+.table-card table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+.btn-edit,
+.btn-delete {
+    min-width: 70px;
+    text-align: center;
+}
+
+.btn-edit {
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.btn-delete {
+    border: none;
+    background: #ef4444;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+
+
+.btn-delete:hover {
+    background: #dc2626;
+}
