@@ -11,6 +11,42 @@ const axiosClient = axios.create({
     },
 });
 
+let refreshPromise = null;
+
+const clearSessionAndRedirect = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+
+    if (window.location.pathname !== "/login") {
+        window.location.assign("/login");
+    }
+};
+
+const refreshAccessToken = () => {
+    if (!refreshPromise) {
+        const refreshToken = localStorage.getItem("refreshToken");
+
+        if (!refreshToken) {
+            return Promise.reject(new Error("Refresh token not found"));
+        }
+
+        refreshPromise = axios
+            .post(`${BASE_URL}/auth/refresh/`, {
+                refresh: refreshToken,
+            })
+            .then((response) => {
+                const newAccessToken = response.data.access;
+                localStorage.setItem("accessToken", newAccessToken);
+                return newAccessToken;
+            })
+            .finally(() => {
+                refreshPromise = null;
+            });
+    }
+
+    return refreshPromise;
+};
+
 axiosClient.interceptors.request.use(
     (config) => {
         const token =
@@ -31,59 +67,39 @@ axiosClient.interceptors.response.use(
 
     async (error) => {
         const originalRequest = error.config;
+        const isAuthRequest = [
+            "/auth/login/",
+            "/auth/register/",
+            "/auth/refresh/",
+        ].some((path) => originalRequest?.url?.includes(path));
 
         if (
             error.response?.status === 401 &&
-            !originalRequest._retry
+            originalRequest &&
+            !originalRequest._retry &&
+            !isAuthRequest
         ) {
             originalRequest._retry = true;
 
             try {
-                const refreshToken =
-                    localStorage.getItem(
-                        "refreshToken"
-                    );
+                const newAccessToken = await refreshAccessToken();
 
-                if (!refreshToken) {
-                    throw new Error(
-                        "Refresh token not found"
-                    );
-                }
-
-                const response = await axios.post(
-                    `${BASE_URL}/token/refresh/`,
-                    {
-                        refresh: refreshToken,
-                    }
-                );
-
-                const newAccessToken =
-                    response.data.access;
-
-                localStorage.setItem(
-                    "accessToken",
-                    newAccessToken
-                );
-
-                originalRequest.headers.Authorization =
-                    `Bearer ${newAccessToken}`;
+                originalRequest.headers = originalRequest.headers || {};
+                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
                 return axiosClient(originalRequest);
             } catch (refreshError) {
-                localStorage.removeItem(
-                    "accessToken"
-                );
+                const refreshStatus = refreshError.response?.status;
 
-                localStorage.removeItem(
-                    "refreshToken"
-                );
+                if (
+                    !localStorage.getItem("refreshToken") ||
+                    refreshStatus === 400 ||
+                    refreshStatus === 401
+                ) {
+                    clearSessionAndRedirect();
+                }
 
-                window.location.href =
-                    "/login";
-
-                return Promise.reject(
-                    refreshError
-                );
+                return Promise.reject(refreshError);
             }
         }
 

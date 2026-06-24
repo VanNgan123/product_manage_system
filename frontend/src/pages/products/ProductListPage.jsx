@@ -1,8 +1,16 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { categoryApi } from "../../api/categoryApi";
 import { productApi } from "../../api/productApi";
+
+const PAGE_SIZE = 20;
+const ORDERING_BY_SORT = {
+    newest: "-id",
+    oldest: "id",
+    priceAsc: "price",
+    priceDesc: "-price",
+};
 
 function ProductListPage() {
     const [products, setProducts] = useState([]);
@@ -10,7 +18,10 @@ function ProductListPage() {
 
     const [keyword, setKeyword] = useState("");
     const [categoryId, setCategoryId] = useState("");
-    const [allProducts, setAllProducts] = useState([]);
+    const [searchParams, setSearchParams] = useState({
+        name: "",
+        category: "",
+    });
 
     const [filters, setFilters] = useState({
         sort: "newest",
@@ -26,46 +37,83 @@ function ProductListPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         const response = await categoryApi.getAll({
             page_size: 100,
         });
 
         setCategories(response.data.data);
-    };
+    }, []);
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         try {
             setLoading(true);
             setError("");
 
             const response = await productApi.getAll({
-                page_size: 9999,
+                name: searchParams.name || undefined,
+                category: searchParams.category || undefined,
+                is_active: filters.status || undefined,
+                stock_status: filters.stock || undefined,
+                ordering: ORDERING_BY_SORT[filters.sort],
+                page,
+                page_size: PAGE_SIZE,
             });
 
             setProducts(response.data.data);
-            setAllProducts(response.data.data);
             setCount(response.data.count);
             setNext(response.data.next);
             setPrevious(response.data.previous);
-        } catch (error) {
+        } catch {
             setError("Không thể tải danh sách sản phẩm.");
         } finally {
             setLoading(false);
         }
-    };
+    }, [
+        filters.sort,
+        filters.status,
+        filters.stock,
+        page,
+        searchParams.category,
+        searchParams.name,
+    ]);
 
     useEffect(() => {
-        fetchCategories();
-    }, []);
+        const timeoutId = window.setTimeout(fetchCategories, 0);
+        return () => window.clearTimeout(timeoutId);
+    }, [fetchCategories]);
 
     useEffect(() => {
-        fetchProducts();
-    }, [page]);
+        const timeoutId = window.setTimeout(fetchProducts, 0);
+        return () => window.clearTimeout(timeoutId);
+    }, [fetchProducts]);
 
     const handleSearch = () => {
         setPage(1);
-        fetchProducts();
+        setSearchParams({
+            name: keyword.trim(),
+            category: categoryId,
+        });
+    };
+
+    const updateFilters = (changes) => {
+        setPage(1);
+        setFilters((currentFilters) => ({
+            ...currentFilters,
+            ...changes,
+        }));
+    };
+
+    const resetFilters = () => {
+        setKeyword("");
+        setCategoryId("");
+        setSearchParams({ name: "", category: "" });
+        setFilters({
+            sort: "newest",
+            status: "",
+            stock: "",
+        });
+        setPage(1);
     };
 
     const handleDelete = async (id) => {
@@ -76,7 +124,7 @@ function ProductListPage() {
         try {
             await productApi.remove(id);
             fetchProducts();
-        } catch (error) {
+        } catch {
             alert("Xóa sản phẩm thất bại.");
         }
     };
@@ -88,54 +136,6 @@ function ProductListPage() {
         }).format(price);
     };
 
-    const filteredProducts = [...allProducts]
-        .filter((product) => {
-
-            const matchKeyword =
-                !keyword ||
-                product.name
-                    .toLowerCase()
-                    .includes(keyword.toLowerCase());
-
-            const matchCategory =
-                !categoryId ||
-                String(product.category) === categoryId;
-
-            const matchStatus =
-                !filters.status ||
-                String(product.is_active) === filters.status;
-
-            const matchStock =
-                !filters.stock ||
-                product.stock_status === filters.stock;
-
-            return (
-                matchKeyword &&
-                matchCategory &&
-                matchStatus &&
-                matchStock
-            );
-        })
-        .sort((a, b) => {
-
-            switch (filters.sort) {
-
-                case "newest":
-                    return b.id - a.id;
-
-                case "oldest":
-                    return a.id - b.id;
-
-                case "priceAsc":
-                    return a.price - b.price;
-
-                case "priceDesc":
-                    return b.price - a.price;
-
-                default:
-                    return 0;
-            }
-        });
     return (
         <div className="page-container">
             <div className="page-header">
@@ -224,12 +224,7 @@ function ProductListPage() {
                                         ? "filter-btn active"
                                         : "filter-btn"
                                 }
-                                onClick={() =>
-                                    setFilters({
-                                        ...filters,
-                                        sort: "newest",
-                                    })
-                                }
+                                onClick={() => updateFilters({ sort: "newest" })}
                             >
                                 Mới nhất
                             </button>
@@ -240,12 +235,7 @@ function ProductListPage() {
                                         ? "filter-btn active"
                                         : "filter-btn"
                                 }
-                                onClick={() =>
-                                    setFilters({
-                                        ...filters,
-                                        sort: "oldest",
-                                    })
-                                }
+                                onClick={() => updateFilters({ sort: "oldest" })}
                             >
                                 Cũ nhất
                             </button>
@@ -256,12 +246,7 @@ function ProductListPage() {
                                         ? "filter-btn active"
                                         : "filter-btn"
                                 }
-                                onClick={() =>
-                                    setFilters({
-                                        ...filters,
-                                        sort: "priceAsc",
-                                    })
-                                }
+                                onClick={() => updateFilters({ sort: "priceAsc" })}
                             >
                                 Giá ↑
                             </button>
@@ -272,12 +257,7 @@ function ProductListPage() {
                                         ? "filter-btn active"
                                         : "filter-btn"
                                 }
-                                onClick={() =>
-                                    setFilters({
-                                        ...filters,
-                                        sort: "priceDesc",
-                                    })
-                                }
+                                onClick={() => updateFilters({ sort: "priceDesc" })}
                             >
                                 Giá ↓
                             </button>
@@ -285,12 +265,7 @@ function ProductListPage() {
                             <select
                                 className="filter-select"
                                 value={filters.status}
-                                onChange={(e) =>
-                                    setFilters({
-                                        ...filters,
-                                        status: e.target.value,
-                                    })
-                                }
+                                onChange={(e) => updateFilters({ status: e.target.value })}
                             >
                                 <option value="">
                                     Tất cả trạng thái
@@ -308,41 +283,27 @@ function ProductListPage() {
                             <select
                                 className="filter-select"
                                 value={filters.stock}
-                                onChange={(e) =>
-                                    setFilters({
-                                        ...filters,
-                                        stock: e.target.value,
-                                    })
-                                }
+                                onChange={(e) => updateFilters({ stock: e.target.value })}
                             >
                                 <option value="">
                                     Tất cả kho
                                 </option>
 
-                                <option value="In stock">
+                                <option value="in_stock">
                                     Còn hàng
                                 </option>
 
-                                <option value="Low stock">
+                                <option value="low_stock">
                                     Sắp hết
                                 </option>
 
-                                <option value="Out of stock">
+                                <option value="out_of_stock">
                                     Hết hàng
                                 </option>
                             </select>
                             <button
                                 className="reset-filter-btn"
-                                onClick={() => {
-                                    setKeyword("");
-                                    setCategoryId("");
-
-                                    setFilters({
-                                        sort: "newest",
-                                        status: "",
-                                        stock: "",
-                                    });
-                                }}
+                                onClick={resetFilters}
                             >
                                 Xóa lọc
                             </button>
@@ -367,8 +328,8 @@ function ProductListPage() {
                             </thead>
 
                             <tbody>
-                                {filteredProducts.length > 0 ? (
-                                    filteredProducts.map((product) => (
+                                {products.length > 0 ? (
+                                    products.map((product) => (
                                         <tr key={product.id}>
                                             <td>
                                                 <img

@@ -13,6 +13,11 @@ class ProductCategoryApiTests(APITestCase):
             username="testuser",
             password="testpass123"
         )
+        self.admin = get_user_model().objects.create_user(
+            username="admin",
+            password="testpass123",
+            is_staff=True,
+        )
 
         self.category = Category.objects.create(
             name="Laptop",
@@ -44,6 +49,31 @@ class ProductCategoryApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("data", response.data)
 
+    def test_filter_products_by_stock_status(self):
+        Product.objects.create(
+            category=self.category,
+            name="Low stock product",
+            sku="LOW-001",
+            price=100,
+            quantity=5,
+        )
+        Product.objects.create(
+            category=self.category,
+            name="Out of stock product",
+            sku="OUT-001",
+            price=100,
+            quantity=0,
+        )
+
+        response = self.client.get(
+            reverse("product-list"),
+            {"stock_status": "low_stock", "page_size": 20},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["data"][0]["sku"], "LOW-001")
+
     def test_create_category_requires_authentication(self):
         url = reverse("category-list")
 
@@ -65,7 +95,7 @@ class ProductCategoryApiTests(APITestCase):
             ],
         )
 
-    def test_authenticated_user_can_create_category(self):
+    def test_authenticated_non_admin_cannot_create_category(self):
         self.client.force_authenticate(user=self.user)
 
         url = reverse("category-list")
@@ -80,11 +110,10 @@ class ProductCategoryApiTests(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["data"]["name"], "Phone")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_authenticated_user_can_create_product(self):
-        self.client.force_authenticate(user=self.user)
+    def test_admin_can_create_product(self):
+        self.client.force_authenticate(user=self.admin)
 
         url = reverse("product-list")
 
