@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
@@ -61,6 +62,8 @@ INSTALLED_APPS = [
 
     # Local apps
     'products',
+    'accounts',
+    'orders',
 ]
 
 MIDDLEWARE = [
@@ -105,7 +108,7 @@ if not DATABASE_URL:
 DATABASES = {
     "default": dj_database_url.config(
         default=DATABASE_URL,
-        conn_max_age=0,
+        conn_max_age=int(os.getenv("DB_CONN_MAX_AGE", "60")),
         conn_health_checks=True,
     )
 }
@@ -170,10 +173,66 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'EXCEPTION_HANDLER': 'utils.exceptions.custom_exception_handler',
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        minutes=int(os.getenv("JWT_ACCESS_TOKEN_LIFETIME_MINUTES", "60"))
+    ),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=int(os.getenv("JWT_REFRESH_TOKEN_LIFETIME_DAYS", "7"))
+    ),
 }
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Product Management API',
     'DESCRIPTION': 'API quản lý sản phẩm và danh mục sản phẩm',
     'VERSION': '1.0.0',
+}
+
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {name} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "[{levelname}] {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": LOG_DIR / "django.log",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "products": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "orders": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
 }

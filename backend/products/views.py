@@ -4,14 +4,14 @@ from rest_framework.response import Response
 from .filters import filter_categories, filter_products
 from .models import Category, Product
 from .pagination import CategoryPagination, ProductPagination
-from .permissions import IsAuthenticatedForWriteOrReadOnly
+from .permissions import IsAdminForWriteOrReadOnly
 from .serializers import CategorySerializer, ProductSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all().order_by("-id")
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticatedForWriteOrReadOnly]
+    permission_classes = [IsAdminForWriteOrReadOnly]
     pagination_class = CategoryPagination
 
     def get_queryset(self):
@@ -180,7 +180,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     )
 
     serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticatedForWriteOrReadOnly]
+    permission_classes = [IsAdminForWriteOrReadOnly]
     pagination_class = ProductPagination
 
     def get_queryset(self):
