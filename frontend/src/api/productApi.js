@@ -1,27 +1,27 @@
 import axiosClient from "./axiosClient";
 
-export const categoryApi = {
+export const productApi = {
     getAll: (params) => {
-        return axiosClient.get("/categories/", { params });
+        return axiosClient.get("/products/", { params });
     },
 
     getById: (id) => {
-        return axiosClient.get(`/categories/${id}/`);
+        return axiosClient.get(`/products/${id}/`);
     },
 
     create: (data) => {
-        return axiosClient.post("/categories/", data);
+        return axiosClient.post("/products/", data);
     },
 
     update: (id, data) => {
-        return axiosClient.put(`/categories/${id}/`, data);
+        return axiosClient.put(`/products/${id}/`, data);
     },
 
     partialUpdate: (id, data) => {
-        return axiosClient.patch(`/categories/${id}/`, data);
+        return axiosClient.patch(`/products/${id}/`, data);
     },
 
     remove: (id) => {
-        return axiosClient.delete(`/categories/${id}/`);
+        return axiosClient.delete(`/products/${id}/`);
     },
 };

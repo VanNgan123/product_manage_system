@@ -1,6 +1,4 @@
-
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { categoryApi } from "../../api/categoryApi";
@@ -13,6 +11,7 @@ function ProductFormPage() {
     const isEditMode = Boolean(id);
 
     const [categories, setCategories] = useState([]);
+    const [errors, setErrors] = useState({});
 
     const [formData, setFormData] = useState({
         category: "",
@@ -20,7 +19,7 @@ function ProductFormPage() {
         sku: "",
         description: "",
         price: "",
-        quantity: 0,
+        quantity: "",
         image_url: "",
         is_active: true,
     });
@@ -29,27 +28,17 @@ function ProductFormPage() {
     const [error, setError] = useState("");
 
     const fetchCategories = async () => {
-        try {
-            const response = await categoryApi.getAll({
-                page_size: 100,
-            });
+        const response = await categoryApi.getAll({
+            page_size: 100,
+        });
 
-            setCategories(
-                response.data.results ||
-                response.data.data ||
-                []
-            );
-        } catch (error) {
-            console.log(error);
-        }
+        setCategories(response.data.data);
     };
 
-    const fetchProduct = async () => {
+    const fetchProduct = useCallback(async () => {
         try {
             const response = await productApi.getById(id);
-
-            const product =
-                response.data.data || response.data;
+            const product = response.data.data;
 
             setFormData({
                 category: product.category || "",
@@ -61,18 +50,22 @@ function ProductFormPage() {
                 image_url: product.image_url || "",
                 is_active: product.is_active,
             });
-        } catch (error) {
+        } catch {
             setError("Không thể tải thông tin sản phẩm.");
         }
-    };
+    }, [id]);
 
     useEffect(() => {
-        fetchCategories();
+        const timeoutId = window.setTimeout(() => {
+            fetchCategories();
 
-        if (isEditMode) {
-            fetchProduct();
-        }
-    }, [id]);
+            if (isEditMode) {
+                fetchProduct();
+            }
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [fetchProduct, isEditMode]);
 
     const handleChange = (event) => {
         const { name, value, type, checked } =
@@ -85,10 +78,63 @@ function ProductFormPage() {
                     ? checked
                     : value,
         });
-    };
 
+        if (errors[name]) {
+            setErrors({
+                ...errors,
+                [name]: "",
+            });
+        }
+    };
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.category) {
+            newErrors.category = "Vui lòng chọn danh mục";
+        }
+
+        if (!formData.sku.trim()) {
+            newErrors.sku = "SKU không được để trống";
+        }
+
+        if (!formData.name.trim()) {
+            newErrors.name = "Tên sản phẩm không được để trống";
+        }
+
+        if (
+            formData.price === "" ||
+            formData.price === null
+        ) {
+            newErrors.price = "Vui lòng nhập giá";
+        } else if (
+            Number(formData.price) <= 0
+        ) {
+            newErrors.price = "Giá phải lớn hơn 0";
+        }
+
+        if (
+            formData.quantity === "" ||
+            formData.quantity === null
+        ) {
+            newErrors.quantity =
+                "Vui lòng nhập số lượng";
+        } else if (
+            Number(formData.quantity) < 0
+        ) {
+            newErrors.quantity =
+                "Số lượng không hợp lệ";
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
     const handleSubmit = async (event) => {
         event.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
 
         try {
             setLoading(true);
@@ -108,235 +154,230 @@ function ProductFormPage() {
 
             navigate("/products");
         } catch (error) {
-            setError(
-                "Lưu sản phẩm thất bại. Vui lòng kiểm tra dữ liệu."
-            );
+
+            const apiErrors =
+                error.response?.data?.errors;
+
+            if (apiErrors) {
+
+                const newErrors = {};
+
+                Object.keys(apiErrors).forEach(
+                    (key) => {
+                        newErrors[key] =
+                            apiErrors[key][0];
+                    }
+                );
+
+                setErrors(newErrors);
+            } else {
+                setError(
+                    "Lưu sản phẩm thất bại."
+                );
+            }
         } finally {
             setLoading(false);
         }
     };
 
+
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-        >
-            <div
-                style={{
-                    background:
-                        "linear-gradient(135deg,#6366f1,#3b82f6)",
-                    color: "#fff",
-                    padding: "25px",
-                    borderRadius: "24px",
-                    marginBottom: "25px",
-                }}
-            >
-                <h2>
-                    {isEditMode
-                        ? "✏️ Cập nhật sản phẩm"
-                        : "📦 Thêm sản phẩm"}
-                </h2>
+        <div className="form-page">
+            <div className="form-card">
+                <div className="form-header">
+                    <h1>
+                        {isEditMode
+                            ? "Cập nhật sản phẩm"
+                            : "Thêm sản phẩm"}
+                    </h1>
 
-                <p
-                    style={{
-                        margin: 0,
-                        opacity: 0.9,
-                    }}
-                >
-                    Quản lý thông tin sản phẩm
-                </p>
-            </div>
+                    <p>
+                        Quản lý thông tin sản phẩm
+                    </p>
+                </div>
 
-            <div
-                style={{
-                    background: "#fff",
-                    borderRadius: "24px",
-                    padding: "30px",
-                    boxShadow:
-                        "0 10px 30px rgba(0,0,0,.08)",
-                }}
-            >
                 {error && (
-                    <div className="alert alert-danger">
+                    <div className="error-alert">
                         {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit}>
-                    <div className="row">
+                <form
+                    className="product-form"
+                    onSubmit={handleSubmit}
+                >
+                    <div className="form-grid">
 
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label">
-                                Danh mục
-                            </label>
+                        <div className="form-group">
+                            <label>Danh mục</label>
 
                             <select
-                                className="form-select"
                                 name="category"
                                 value={formData.category}
                                 onChange={handleChange}
+
+
                             >
                                 <option value="">
                                     Chọn danh mục
                                 </option>
 
-                                {categories.map(
-                                    (category) => (
-                                        <option
-                                            key={category.id}
-                                            value={category.id}
-                                        >
-                                            {category.name}
-                                        </option>
-                                    )
-                                )}
+                                {categories.map((category) => (
+                                    <option
+                                        key={category.id}
+                                        value={category.id}
+                                    >
+                                        {category.name}
+                                    </option>
+                                ))}
                             </select>
+                            {errors.category && (
+                                <p className="field-error">
+                                    {errors.category}
+                                </p>
+                            )}
                         </div>
 
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label">
-                                Tên sản phẩm
-                            </label>
+                        <div className="form-group">
+                            <label>SKU</label>
 
                             <input
-                                className="form-control"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        <div className="col-md-6 mb-3">
-                            <label className="form-label">
-                                SKU
-                            </label>
-
-                            <input
-                                className="form-control"
                                 name="sku"
                                 value={formData.sku}
                                 onChange={handleChange}
+                                placeholder="SP001"
                             />
+                            {errors.sku && (
+                                <p className="field-error">
+                                    {errors.sku}
+                                </p>
+                            )}
                         </div>
 
-                        <div className="col-md-3 mb-3">
-                            <label className="form-label">
-                                Giá
-                            </label>
+                        <div className="form-group full-width">
+                            <label>Tên sản phẩm</label>
 
                             <input
-                                className="form-control"
-                                name="price"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                placeholder="Nhập tên sản phẩm..."
+
+                            />
+                            {errors.name && (
+                                <p className="field-error">
+                                    {errors.name}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="form-group">
+                            <label>Giá bán (VNĐ)</label>
+
+                            <input
                                 type="number"
+                                name="price"
                                 value={formData.price}
                                 onChange={handleChange}
+                                placeholder="100000"
                             />
+                            {errors.price && (
+                                <p className="field-error">
+                                    {errors.price}
+                                </p>
+                            )}
                         </div>
 
-                        <div className="col-md-3 mb-3">
-                            <label className="form-label">
-                                Số lượng
-                            </label>
+                        <div className="form-group">
+                            <label>Số lượng</label>
 
                             <input
-                                className="form-control"
-                                name="quantity"
                                 type="number"
+                                name="quantity"
                                 value={formData.quantity}
                                 onChange={handleChange}
                             />
+                            {errors.quantity && (
+                                <p className="field-error">
+                                    {errors.quantity}
+                                </p>
+                            )}
                         </div>
 
-                        <div className="col-md-12 mb-3">
-                            <label className="form-label">
-                                Mô tả
-                            </label>
-
-                            <textarea
-                                rows="4"
-                                className="form-control"
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                            />
-                        </div>
-
-                        {/* <div className="col-md-12 mb-3">
-                            <label className="form-label">
-                                Image URL
-                            </label>
+                        <div className="form-group full-width">
+                            <label>Ảnh sản phẩm</label>
 
                             <input
-                                className="form-control"
                                 name="image_url"
                                 value={formData.image_url}
                                 onChange={handleChange}
+                                placeholder="https://..."
                             />
                         </div>
 
                         {formData.image_url && (
-                            <div className="col-md-12 mb-4">
+                            <div className="image-preview-container full-width">
                                 <img
                                     src={formData.image_url}
                                     alt="preview"
-                                    style={{
-                                        width: 220,
-                                        borderRadius: 16,
-                                        border:
-                                            "1px solid #ddd",
-                                    }}
+                                    className="image-preview"
                                 />
                             </div>
-                        )} */}
+                        )}
 
-                        <div className="col-md-12 mb-4">
-                            <div className="form-check form-switch">
-                                <input
-                                    className="form-check-input"
-                                    type="checkbox"
-                                    name="is_active"
-                                    checked={
-                                        formData.is_active
-                                    }
-                                    onChange={
-                                        handleChange
-                                    }
-                                />
+                        <div className="form-group full-width">
+                            <label>Mô tả</label>
 
-                                <label className="form-check-label">
-                                    Hoạt động
-                                </label>
-                            </div>
+                            <textarea
+                                rows="5"
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                placeholder="Mô tả sản phẩm..."
+                            />
                         </div>
 
-                        <div className="col-md-12 d-flex gap-2">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="btn btn-primary"
-                            >
-                                {loading
-                                    ? "Đang lưu..."
-                                    : " Lưu sản phẩm"}
-                            </button>
+                        <div className="checkbox-group full-width">
+                            <input
+                                type="checkbox"
+                                id="is_active"
+                                name="is_active"
+                                checked={formData.is_active}
+                                onChange={handleChange}
+                            />
 
-                            <button
-                                type="button"
-                                className="btn btn-outline-secondary"
-                                onClick={() =>
-                                    navigate(
-                                        "/products"
-                                    )
-                                }
-                            >
-                                Quay lại
-                            </button>
+                            <label htmlFor="is_active">
+                                Hiển thị sản phẩm
+                            </label>
                         </div>
+                    </div>
 
+                    <div className="form-actions">
+                        <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() =>
+                                navigate("/products")
+                            }
+                        >
+                            Hủy
+                        </button>
+
+                        <button
+                            type="submit"
+                            className="btn-primary"
+                            disabled={loading}
+                        >
+                            {loading
+                                ? "Đang lưu..."
+                                : isEditMode
+                                    ? "Cập nhật"
+                                    : "Tạo sản phẩm"}
+                        </button>
                     </div>
                 </form>
             </div>
-        </motion.div>
+        </div>
     );
 }
 
