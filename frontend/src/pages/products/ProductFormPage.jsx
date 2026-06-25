@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { categoryApi } from "../../api/categoryApi";
@@ -35,7 +35,7 @@ function ProductFormPage() {
         setCategories(response.data.data);
     };
 
-    const fetchProduct = async () => {
+    const fetchProduct = useCallback(async () => {
         try {
             const response = await productApi.getById(id);
             const product = response.data.data;
@@ -50,18 +50,22 @@ function ProductFormPage() {
                 image_url: product.image_url || "",
                 is_active: product.is_active,
             });
-        } catch (error) {
+        } catch {
             setError("Không thể tải thông tin sản phẩm.");
         }
-    };
+    }, [id]);
 
     useEffect(() => {
-        fetchCategories();
+        const timeoutId = window.setTimeout(() => {
+            fetchCategories();
 
-        if (isEditMode) {
-            fetchProduct();
-        }
-    }, [id]);
+            if (isEditMode) {
+                fetchProduct();
+            }
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [fetchProduct, isEditMode]);
 
     const handleChange = (event) => {
         const { name, value, type, checked } =
