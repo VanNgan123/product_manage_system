@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { cartApi } from "../../api/cartApi";
+import "../../styles/cart.css";
 
 function CartPage() {
     const navigate = useNavigate();
@@ -97,113 +98,123 @@ function CartPage() {
     }
 
     return (
-        <div className="container py-4">
-            <h2 className="mb-4">
-                Giỏ hàng
-            </h2>
+        <div className="cart-page">
+            <div className="cart-container">
+                <div className="cart-header">
+                    <h1>🛒 Giỏ hàng của bạn</h1>
+                    <span>{cart.items.length} sản phẩm</span>
+                </div>
 
-            <table className="table table-bordered align-middle">
-                <thead>
-                    <tr>
-                        <th>Ảnh</th>
-                        <th>Sản phẩm</th>
-                        <th>Giá</th>
-                        <th>Số lượng</th>
-                        <th>Thành tiền</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
+                <div className="cart-content">
+                    <div className="cart-items">
+                        {cart.items.map((item) => (
+                            <div
+                                key={item.id}
+                                className="cart-item-card"
+                            >
+                                <div className="cart-image">
+                                    <img
+                                        src={
+                                            item.product?.image_url ||
+                                            "https://placehold.co/200x200"
+                                        }
+                                        alt={item.product?.name}
+                                    />
+                                </div>
 
-                <tbody>
-                    {cart.items.map((item) => (
-                        <tr key={item.id}>
-                            <td width="120">
-                                <img
-                                    src={
-                                        item.product?.image_url
-                                    }
-                                    alt={
-                                        item.product?.name
-                                    }
-                                    className="img-fluid rounded"
-                                />
-                            </td>
+                                <div className="cart-info">
+                                    <h3>
+                                        {item.product?.name}
+                                    </h3>
 
-                            <td>
-                                {
-                                    item.product?.name
-                                }
-                            </td>
+                                    <div className="cart-price">
+                                        {Number(
+                                            item.price
+                                        ).toLocaleString()}
+                                        đ
+                                    </div>
+                                </div>
 
-                            <td>
-                                {Number(
-                                    item.price
-                                ).toLocaleString()}
-                                đ
-                            </td>
+                                <div className="cart-quantity">
+                                    <button
+                                        onClick={() =>
+                                            handleQuantityChange(
+                                                item.id,
+                                                item.quantity - 1
+                                            )
+                                        }
+                                    >
+                                        -
+                                    </button>
 
-                            <td width="140">
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={
-                                        item.quantity
-                                    }
-                                    className="form-control"
-                                    onChange={(e) =>
-                                        handleQuantityChange(
-                                            item.id,
-                                            e.target.value
-                                        )
-                                    }
-                                />
-                            </td>
+                                    <span>
+                                        {item.quantity}
+                                    </span>
 
-                            <td>
-                                {Number(
-                                    item.total_amount
-                                ).toLocaleString()}
-                                đ
-                            </td>
+                                    <button
+                                        onClick={() =>
+                                            handleQuantityChange(
+                                                item.id,
+                                                item.quantity + 1
+                                            )
+                                        }
+                                    >
+                                        +
+                                    </button>
+                                </div>
 
-                            <td width="120">
+                                <div className="cart-total">
+                                    {Number(
+                                        item.total_amount
+                                    ).toLocaleString()}
+                                    đ
+                                </div>
+
                                 <button
-                                    className="btn btn-danger btn-sm"
+                                    className="remove-btn"
                                     onClick={() =>
-                                        handleRemove(
-                                            item.id
-                                        )
+                                        handleRemove(item.id)
                                     }
                                 >
                                     Xóa
                                 </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                            </div>
+                        ))}
+                    </div>
 
-            <div className="d-flex justify-content-between align-items-center mt-4">
-                <h4>
-                    Tổng tiền:{" "}
-                    {Number(
-                        cart.total_amount
-                    ).toLocaleString()}
-                    đ
-                </h4>
+                    <div className="checkout-card">
+                        <h3>Tóm tắt đơn hàng</h3>
 
-                <button
-                    className="btn btn-success"
-                    onClick={() =>
-                        navigate("/checkout")
-                    }
-                >
-                    Thanh toán
-                </button>
+                        <div className="summary-row">
+                            <span>Số sản phẩm</span>
+                            <strong>
+                                {cart.items.length}
+                            </strong>
+                        </div>
+
+                        <div className="summary-row total">
+                            <span>Tổng cộng</span>
+                            <strong>
+                                {Number(
+                                    cart.total_amount
+                                ).toLocaleString()}
+                                đ
+                            </strong>
+                        </div>
+
+                        <button
+                            className="checkout-btn"
+                            onClick={() =>
+                                navigate("/checkout")
+                            }
+                        >
+                            Thanh toán
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
-
 
 }
 

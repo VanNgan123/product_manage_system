@@ -17,6 +17,11 @@ function ProductListPage() {
     const [keyword, setKeyword] = useState("");
     const [categoryId, setCategoryId] = useState("");
 
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
+
+    const [sortBy, setSortBy] = useState("");
+
     const [searchParams, setSearchParams] = useState({
         name: "",
         category: "",
@@ -87,6 +92,34 @@ function ProductListPage() {
             category: categoryId,
         });
     };
+    const filteredProducts = products
+        .filter((product) => {
+            const matchMin =
+                !minPrice || product.price >= Number(minPrice);
+
+            const matchMax =
+                !maxPrice || product.price <= Number(maxPrice);
+
+            return matchMin && matchMax;
+        })
+        .sort((a, b) => {
+            switch (sortBy) {
+                case "price_asc":
+                    return a.price - b.price;
+
+                case "price_desc":
+                    return b.price - a.price;
+
+                case "newest":
+                    return new Date(b.created_at) - new Date(a.created_at);
+
+                case "oldest":
+                    return new Date(a.created_at) - new Date(b.created_at);
+
+                default:
+                    return 0;
+            }
+        });
 
     const handleAddToCart = async (product, imageElement) => {
         try {
@@ -142,32 +175,77 @@ function ProductListPage() {
             <main className="user-main-content">
                 <div className="page-title">
                     <h1>Khám phá Sản Phẩm</h1>
-                    <p>Những sản phẩm công nghệ mới nhất dành cho bạn</p>
+
                 </div>
 
                 <div className="search-card glassy-card">
+
+
                     <input
                         className="glassy-input"
-                        placeholder="Tìm kiếm sản phẩm..."
+                        placeholder="Tìm sản phẩm..."
                         value={keyword}
                         onChange={(e) => setKeyword(e.target.value)}
                     />
+
+
+
+
+
                     <select
-                        className="glassy-input"
-                        value={categoryId}
-                        onChange={(e) => setCategoryId(e.target.value)}
+                        className="glassy-input sort-filter"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
                     >
-                        <option value="">Tất cả danh mục</option>
-                        {categories.map((category) => (
-                            <option key={category.id} value={category.id} style={{ color: '#000' }}>
-                                {category.name}
-                            </option>
-                        ))}
+                        <option value="">Lọc</option>
+
+                        <option value="price_asc">
+                            Giá tăng dần
+                        </option>
+
+                        <option value="price_desc">
+                            Giá giảm dần
+                        </option>
+
+                        <option value="newest">
+                            Mới nhất
+                        </option>
+
+                        <option value="oldest">
+                            Cũ nhất
+                        </option>
                     </select>
-                    <button className="btn-primary" onClick={handleSearch}>
+
+                    <button
+                        className="btn-primary"
+                        onClick={handleSearch}
+                    >
                         Tìm kiếm
                     </button>
+
+                    <button
+                        className="btn-reset"
+                        onClick={() => {
+                            setKeyword("");
+                            setCategoryId("");
+                            setMinPrice("");
+                            setMaxPrice("");
+                            setSortBy("");
+
+                            setSearchParams({
+                                name: "",
+                                category: "",
+                            });
+
+                            setPage(1);
+                        }}
+                    >
+                        Reset
+                    </button>
+
+
                 </div>
+
 
                 {loading && <div className="loading-state glassy-card">Đang tải sản phẩm...</div>}
                 {error && <div className="error-alert glassy-card">{error}</div>}
@@ -175,12 +253,12 @@ function ProductListPage() {
                 {!loading && (
                     <>
                         <div className="summary-text">
-                            Tổng số sản phẩm: <strong>{count}</strong>
+                            Hiển thị <strong>{filteredProducts.length}</strong> / {count} sản phẩm
                         </div>
 
                         <div className="product-grid">
                             {products.length > 0 ? (
-                                products.map((product) => (
+                                filteredProducts.map((product) => (
                                     <div key={product.id} className="product-card glassy-card">
                                         <div className="img-container">
                                             <img

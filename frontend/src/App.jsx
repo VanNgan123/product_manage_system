@@ -18,6 +18,7 @@ import ProductListPage from "./pages/products/ProductListPage";
 
 // Admin Pages
 import AdminHomePage from "./pages/admin/product/AdminHomePage";
+import CartPage from "./pages/cart/CartPage";
 import CategoryFormPage from "./pages/categories/CategoryFormPage";
 import CategoryListPage from "./pages/categories/CategoryListPage";
 import OrderDetailPage from "./pages/orders/OrderDetailPage";
@@ -65,6 +66,10 @@ function App() {
                     <Route
                         path="/my-orders/:id"
                         element={<MyOrderDetailPage />}
+                    />
+                    <Route
+                        path="/cart"
+                        element={<CartPage />}
                     />
 
                     {/* ADMIN */}

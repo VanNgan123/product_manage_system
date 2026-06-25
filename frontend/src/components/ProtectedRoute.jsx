@@ -10,6 +10,34 @@ function ProtectedRoute() {
 
     // Nếu có token -> Cho phép đi tiếp vào các trang bên trong
     return <Outlet />;
+    <Route element={<ProtectedRoute />}>
+
+        <Route
+            path="/"
+            element={<Navigate to="/products" replace />}
+        />
+
+        <Route
+            path="/products"
+            element={<ProductListPage />}
+        />
+
+        <Route
+            path="/products/:id"
+            element={<ProductDetailPage />}
+        />
+
+        <Route
+            path="/cart"
+            element={<CartPage />}
+        />
+
+        <Route
+            path="/checkout"
+            element={<CheckoutPage />}
+        />
+
+    </Route>
 }
 
 export default ProtectedRoute;
