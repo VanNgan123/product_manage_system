@@ -9,6 +9,9 @@ env/
 .env
 backend/.env
 backend/.env.docker
+frontend/.env
+backend/logs/
+logs/
 
 # Django static/media
 staticfiles/

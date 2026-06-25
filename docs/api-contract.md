@@ -264,6 +264,14 @@ Lọc theo trạng thái hoạt động:
 GET /api/products/?is_active=true
 ```
 
+Lọc theo trạng thái tồn kho:
+
+```http
+GET /api/products/?stock_status=in_stock
+GET /api/products/?stock_status=low_stock
+GET /api/products/?stock_status=out_of_stock
+```
+
 Sắp xếp theo giá tăng dần:
 
 ```http
