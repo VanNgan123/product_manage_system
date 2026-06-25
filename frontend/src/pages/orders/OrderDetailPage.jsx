@@ -29,8 +29,10 @@ function OrderDetailPage() {
             setLoading(true);
             setError("");
             const response = await orderApi.getById(id);
-            setOrder(response.data.data);
-            setStatus(response.data.data.status);
+            const payload = response.data;
+            const orderData = payload.data || payload;
+            setOrder(orderData);
+            setStatus(orderData.status);
         } catch {
             setError("Không thể tải chi tiết đơn hàng.");
         } finally {
@@ -48,9 +50,31 @@ function OrderDetailPage() {
             setSaving(true);
             setError("");
             const response = await orderApi.updateStatus(id, { status });
-            setOrder(response.data.data);
+            const payload = response.data;
+            const orderData = payload.data || payload;
+            setOrder(orderData);
+            setStatus(orderData.status);
         } catch (error) {
             setError(error.response?.data?.message || "Cập nhật trạng thái thất bại.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleCancelOrder = async () => {
+        if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) {
+            return;
+        }
+        try {
+            setSaving(true);
+            setError("");
+            const response = await orderApi.updateStatus(id, { status: "cancelled" });
+            const payload = response.data;
+            const orderData = payload.data || payload;
+            setOrder(orderData);
+            setStatus(orderData.status);
+        } catch (error) {
+            setError(error.response?.data?.message || "Hủy đơn hàng thất bại.");
         } finally {
             setSaving(false);
         }
@@ -85,7 +109,7 @@ function OrderDetailPage() {
 
                 <div className="info-card">
                     <h2>Cập nhật trạng thái</h2>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: "16px" }}>
                         <label>Trạng thái</label>
                         <select value={status} onChange={(event) => setStatus(event.target.value)}>
                             {statuses.map((item) => (
@@ -93,9 +117,16 @@ function OrderDetailPage() {
                             ))}
                         </select>
                     </div>
-                    <button className="btn-primary" onClick={handleUpdateStatus} disabled={saving}>
-                        {saving ? "Đang cập nhật..." : "Cập nhật trạng thái"}
-                    </button>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <button className="btn-primary" onClick={handleUpdateStatus} disabled={saving}>
+                            {saving ? "Đang cập nhật..." : "Cập nhật trạng thái"}
+                        </button>
+                        {order.status !== "cancelled" && order.status !== "completed" && (
+                            <button className="btn-delete" onClick={handleCancelOrder} disabled={saving}>
+                                Hủy đơn hàng
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 
