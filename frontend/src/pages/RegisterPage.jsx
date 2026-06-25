@@ -1,144 +1,94 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../api/authApi";
-import "../styles/RegisterPage.css";
 
 function RegisterPage() {
     const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        username: "",
+        email: "",
+        first_name: "",
+        last_name: "",
+        password: "",
+    });
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-    const [formData, setFormData] =
-        useState({
-            username: "",
-            email: "",
-            first_name: "",
-            last_name: "",
-            password: "",
-        });
+    const handleChange = (event) => {
+        const { name, value } = event.target;
+        setFormData((current) => ({ ...current, [name]: value }));
+    };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
 
         try {
-            console.log("Register data:", formData);
-
-            const response = await authApi.register(formData);
-
-            console.log("Register success:", response);
-
-            alert("Đăng ký thành công");
-
+            setLoading(true);
+            setError("");
+            await authApi.register(formData);
             navigate("/login");
         } catch (error) {
-            console.error("Register error:", error);
-
-            console.log("Response:", error.response);
-
-            alert(
-                error.response?.data?.message ||
-                JSON.stringify(error.response?.data) ||
-                "Đăng ký thất bại"
-            );
+            setError(error.response?.data?.message || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="register-page">
-            <div className="background-orb orb-1"></div>
-            <div className="background-orb orb-2"></div>
-            <div className="background-orb orb-3"></div>
-
-            <div className="register-card">
-                <div className="logo">
-                    PMS
+        <div className="auth-page">
+            <div className="auth-card wide">
+                <div className="auth-header">
+                    <h1 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                        <span style={{ background: "var(--accent)", color: "#fff", width: "36px", height: "36px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", fontWeight: "800" }}>R</span>
+                        Rainscales<span style={{ color: "var(--accent)" }}>Shop</span>
+                    </h1>
+                    <p>Tạo tài khoản khách hàng mới</p>
                 </div>
 
-                <h3>
-                    Create Account
-                </h3>
+                <form className="auth-form" onSubmit={handleSubmit}>
+                    <div className="form-grid">
+                        <div className="form-group">
+                            <label>Username</label>
+                            <input name="username" value={formData.username} onChange={handleChange} required />
+                        </div>
 
-                <p className="subtitle">
-                    Register new account
-                </p>
+                        <div className="form-group">
+                            <label>Email</label>
+                            <input name="email" type="email" value={formData.email} onChange={handleChange} required />
+                        </div>
 
-                <form
-                    className="register-form"
-                    onSubmit={handleSubmit}
-                >
-                    <input
-                        type="text"
-                        placeholder="Username"
-                        value={formData.username}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                username: e.target.value,
-                            })
-                        }
-                    />
+                        <div className="form-group">
+                            <label>First name</label>
+                            <input name="first_name" value={formData.first_name} onChange={handleChange} />
+                        </div>
 
-                    <input
-                        type="email"
-                        placeholder="Email"
-                        value={formData.email}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                email: e.target.value,
-                            })
-                        }
-                    />
+                        <div className="form-group">
+                            <label>Last name</label>
+                            <input name="last_name" value={formData.last_name} onChange={handleChange} />
+                        </div>
 
-                    <input
-                        type="text"
-                        placeholder="First Name"
-                        value={formData.first_name}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                first_name: e.target.value,
-                            })
-                        }
-                    />
+                        <div className="form-group full-width">
+                            <label>Password</label>
+                            <input
+                                name="password"
+                                type="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
 
-                    <input
-                        type="text"
-                        placeholder="Last Name"
-                        value={formData.last_name}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                last_name: e.target.value,
-                            })
-                        }
-                    />
+                    {error && <div className="error-alert">{error}</div>}
 
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={formData.password}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                password: e.target.value,
-                            })
-                        }
-                    />
-
-                    <button
-                        type="submit"
-                        className="register-btn"
-                    >
-                        Đăng ký
+                    <button type="submit" className="btn-primary block" disabled={loading}>
+                        {loading ? "Đang đăng ký..." : "Đăng ký"}
                     </button>
                 </form>
 
-                <div className="login-link">
-                    <span>Đã có tài khoản?</span>
-
-                    <Link to="/login">
-                        Đăng nhập
-                    </Link>
-                </div>
+                <p className="auth-link">
+                    Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+                </p>
             </div>
         </div>
     );

@@ -1,105 +1,126 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { orderApi } from "../../api/orderApi";
 
+const statuses = ["pending", "confirmed", "shipping", "completed", "cancelled"];
+const statusLabels = {
+    pending: "Chờ xử lý",
+    confirmed: "Đã xác nhận",
+    shipping: "Đang giao",
+    completed: "Hoàn thành",
+    cancelled: "Đã hủy",
+};
+
+const formatPrice = (value) => {
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(Number(value || 0));
+};
+
 function OrderDetailPage() {
+    const navigate = useNavigate();
     const { id } = useParams();
-
     const [order, setOrder] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [status, setStatus] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState("");
 
-    const fetchOrder = async () => {
+    const fetchOrder = useCallback(async () => {
         try {
-            const response =
-                await orderApi.getById(id);
-
+            setLoading(true);
+            setError("");
+            const response = await orderApi.getById(id);
             setOrder(response.data.data);
+            setStatus(response.data.data.status);
+        } catch {
+            setError("Không thể tải chi tiết đơn hàng.");
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleStatusChange = async (
-        e
-    ) => {
-        const status = e.target.value;
-
-        await orderApi.updateStatus(id, {
-            status,
-        });
-
-        fetchOrder();
-    };
-
-    useEffect(() => {
-        fetchOrder();
     }, [id]);
 
-    if (loading) return <p>Đang tải...</p>;
+    useEffect(() => {
+        const timeoutId = window.setTimeout(fetchOrder, 0);
+        return () => window.clearTimeout(timeoutId);
+    }, [fetchOrder]);
 
-    if (!order) return <p>Không tìm thấy</p>;
+    const handleUpdateStatus = async () => {
+        try {
+            setSaving(true);
+            setError("");
+            const response = await orderApi.updateStatus(id, { status });
+            setOrder(response.data.data);
+        } catch (error) {
+            setError(error.response?.data?.message || "Cập nhật trạng thái thất bại.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) return <div className="loading-card">Đang tải dữ liệu...</div>;
+    if (error && !order) return <div className="error-alert">{error}</div>;
+    if (!order) return null;
 
     return (
-        <div>
-            <h2>Đơn hàng #{order.id}</h2>
-
-            <p>
-                Người nhận:
-                {order.full_name}
-            </p>
-
-            <p>
-                Điện thoại:
-                {order.phone}
-            </p>
-
-            <p>
-                Địa chỉ:
-                {order.address}
-            </p>
-
-            <p>
-                Tổng tiền:
-                {order.total_amount}
-            </p>
-
-            <select
-                value={order.status}
-                onChange={
-                    handleStatusChange
-                }
-            >
-                <option value="pending">
-                    pending
-                </option>
-
-                <option value="confirmed">
-                    confirmed
-                </option>
-
-                <option value="shipping">
-                    shipping
-                </option>
-
-                <option value="completed">
-                    completed
-                </option>
-
-                <option value="cancelled">
-                    cancelled
-                </option>
-            </select>
-
-            <hr />
-
-            <h3>Sản phẩm</h3>
-
-            {order.items?.map((item) => (
-                <div key={item.id}>
-                    {item.product_name} x{" "}
-                    {item.quantity}
+        <div className="page-container">
+            <div className="page-header">
+                <div>
+                    <h1>Đơn hàng #{order.id}</h1>
+                    <p>Thông tin đơn hàng và sản phẩm đã mua</p>
                 </div>
-            ))}
+                <button className="btn-secondary" onClick={() => navigate("/admin/orders")}>Quay lại</button>
+            </div>
+
+            {error && <div className="error-alert">{error}</div>}
+
+            <div className="detail-grid">
+                <div className="info-card">
+                    <h2>Thông tin nhận hàng</h2>
+                    <p><strong>Username:</strong> {order.username}</p>
+                    <p><strong>Người nhận:</strong> {order.full_name}</p>
+                    <p><strong>Số điện thoại:</strong> {order.phone}</p>
+                    <p><strong>Địa chỉ:</strong> {order.address}</p>
+                    <p><strong>Ghi chú:</strong> {order.note || "-"}</p>
+                    <p><strong>Tổng tiền:</strong> {formatPrice(order.total_amount)}</p>
+                </div>
+
+                <div className="info-card">
+                    <h2>Cập nhật trạng thái</h2>
+                    <div className="form-group">
+                        <label>Trạng thái</label>
+                        <select value={status} onChange={(event) => setStatus(event.target.value)}>
+                            {statuses.map((item) => (
+                                <option key={item} value={item}>{statusLabels[item]}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <button className="btn-primary" onClick={handleUpdateStatus} disabled={saving}>
+                        {saving ? "Đang cập nhật..." : "Cập nhật trạng thái"}
+                    </button>
+                </div>
+            </div>
+
+            <div className="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Giá</th>
+                            <th>Số lượng</th>
+                            <th>Tổng dòng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {order.items.map((item) => (
+                            <tr key={item.id}>
+                                <td>{item.product_name}</td>
+                                <td>{formatPrice(item.price)}</td>
+                                <td>{item.quantity}</td>
+                                <td className="price-cell">{formatPrice(item.total_price)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
