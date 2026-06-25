@@ -1,131 +1,62 @@
-
-
-// import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-// import "./Layout.css";
-
-// function Layout() {
-//     const navigate = useNavigate();
-//     const location = useLocation();
-
-//     const handleLogout = () => {
-//         localStorage.removeItem("accessToken");
-//         localStorage.removeItem("refreshToken");
-//         navigate("/login");
-//     };
-
-//     return (
-//         <div className="layout">
-//             <aside className="sidebar">
-//                 <div className="logo">
-//                     <h2>PMS</h2>
-//                     <span>Product Manager System</span>
-//                 </div>
-
-//                 <nav className="menu">
-//                     <Link
-//                         to="/products"
-//                         className={
-//                             location.pathname.includes("/products")
-//                                 ? "menu-item active"
-//                                 : "menu-item"
-//                         }
-//                     >
-//                         📦 Sản phẩm
-//                     </Link>
-
-//                     <Link
-//                         to="/categories"
-//                         className={
-//                             location.pathname.includes("/categories")
-//                                 ? "menu-item active"
-//                                 : "menu-item"
-//                         }
-//                     >
-//                         📁 Danh mục
-//                     </Link>
-//                 </nav>
-
-//                 <button
-//                     className="logout-btn"
-//                     onClick={handleLogout}
-//                 >
-//                     Đăng xuất
-//                 </button>
-//             </aside>
-
-//             <div className="main">
-//                 <header className="header">
-//                     <h1>Product Management Dashboard</h1>
-//                 </header>
-
-//                 <main className="content">
-//                     <Outlet />
-//                 </main>
-//             </div>
-//         </div>
-//     );
-// }
-
-// export default Layout;
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import "./Layout.css";
 
-function Layout() {
+function AdminLayout() {
     const navigate = useNavigate();
     const location = useLocation();
 
     const handleLogout = () => {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
         navigate("/login");
     };
 
+    const isActive = (path) => {
+        return location.pathname === path || location.pathname.startsWith(`${path}/`);
+    };
+
     return (
-        <div className="layout">
-            <aside className="sidebar">
-                <div className="logo">
+        <div className="admin-layout">
+            <aside className="admin-sidebar">
+                <div className="admin-logo">
                     <h2>PMS</h2>
-                    <span>Product Manager System</span>
+                    <span>Admin Dashboard</span>
                 </div>
 
-                <nav className="menu">
+                <nav className="admin-menu">
                     <Link
-                        to="/products"
-                        className={
-                            location.pathname.includes("/products")
-                                ? "menu-item active"
-                                : "menu-item"
-                        }
+                        to="/admin/products"
+                        className={isActive("/admin/products") ? "admin-menu-item active" : "admin-menu-item"}
                     >
-                        📦 Sản phẩm
+                        📦 Quản lý sản phẩm
                     </Link>
 
                     <Link
-                        to="/categories"
-                        className={
-                            location.pathname.includes("/categories")
-                                ? "menu-item active"
-                                : "menu-item"
-                        }
+                        to="/admin/categories"
+                        className={isActive("/admin/categories") ? "admin-menu-item active" : "admin-menu-item"}
                     >
-                        📁 Danh mục
+                        📂 Quản lý danh mục
+                    </Link>
+
+                    <Link
+                        to="/admin/orders"
+                        className={isActive("/admin/orders") ? "admin-menu-item active" : "admin-menu-item"}
+                    >
+                        📋 Quản lý đơn hàng
                     </Link>
                 </nav>
 
-                <button
-                    className="logout-btn"
-                    onClick={handleLogout}
-                >
+                <button className="admin-logout-btn" onClick={handleLogout}>
                     Đăng xuất
                 </button>
             </aside>
 
-            <div className="main">
-                <header className="header">
-                    <h1>Product Management Dashboard</h1>
+            <div className="admin-main">
+                <header className="admin-header">
+                    <h1>Admin Dashboard</h1>
                 </header>
 
-                <main className="content">
+                <main className="admin-content">
                     <Outlet />
                 </main>
             </div>
@@ -133,4 +64,4 @@ function Layout() {
     );
 }
 
-export default Layout;
+export default AdminLayout;
