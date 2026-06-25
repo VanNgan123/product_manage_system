@@ -57,6 +57,7 @@ def filter_products(queryset: QuerySet, query_params) -> QuerySet:
     max_quantity = query_params.get("max_quantity")
 
     is_active = parse_boolean(query_params.get("is_active"))
+    stock_status = query_params.get("stock_status")
     ordering = query_params.get("ordering")
 
     if name:
@@ -87,6 +88,13 @@ def filter_products(queryset: QuerySet, query_params) -> QuerySet:
 
     if is_active is not None:
         queryset = queryset.filter(is_active=is_active)
+
+    if stock_status == "in_stock":
+        queryset = queryset.filter(quantity__gte=10)
+    elif stock_status == "low_stock":
+        queryset = queryset.filter(quantity__range=(1, 9))
+    elif stock_status == "out_of_stock":
+        queryset = queryset.filter(quantity=0)
 
     allowed_ordering_fields = {
         "id",
